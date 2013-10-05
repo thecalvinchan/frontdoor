@@ -1,7 +1,10 @@
 <!doctype html>
-<html>
+<html ng-app="EventsModule">
 <head>
     <title>FrontDoor - Current Events</title>
+    <script src="js/jquery-1.10.2.min.js"></script>
+    <script src="js/angular.min.js"></script>
+    <script src="js/events.js"></script>
     <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="css/events.css">
 </head>
@@ -20,30 +23,18 @@
                 <p class="lead">Create or edit upcoming events</p>
             </div>
         </header>
-        <section class="row">
-            <div class="col-md-4 event">
+        <section class="row" ng-controller="eventCtrl">
+            <div class="col-md-4 event" ng-repeat="event in events">
                 <div class="event-details">
                     <div class="event-time">
-                        <h3 class="event-month text-center">September</h3>
-                        <h3 class="event-date text-center">13</h3>
+                        <h3 class="event-month text-center">{{event.month}}</h3>
+                        <h3 class="event-date text-center">{{event.date}}</h3>
                     </div>
                     <div class="event-misc">
-                        <h3 class="event-title text-center">Event Title</h3>
-                        <p><strong>Location:</strong> location</p>
-                        <p><strong>Description:</strong> description</p>
+                        <h3 class="event-title text-center">{{event.title}}</h3>
+                        <p><strong>Time:</strong> {{event.time}}</p>
+                        <p><strong>Description:</strong> {{event.desc}}</p>
                     </div>
-                </div>
-            </div>
-            <div class="col-md-4 event">
-                <div class="event-details">
-                    <h3 class="event-month text-center">September</h3>
-                    <h3 class="event-date text-center">13</h3>
-                </div>
-            </div>
-            <div class="col-md-4 event">
-                <div class="event-details">
-                    <h3 class="event-month text-center">September</h3>
-                    <h3 class="event-date text-center">13</h3>
                 </div>
             </div>
         </section>
