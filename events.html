@@ -24,7 +24,7 @@
             </div>
         </header>
         <section class="row" ng-controller="eventCtrl">
-            <div class="col-md-4 event" ng-repeat="event in events">
+            <div class="col-md-4 event" ng-repeat="event in events.events">
                 <div class="event-details">
                     <div class="event-time">
                         <h3 class="event-month text-center">{{event.month}}</h3>
@@ -32,8 +32,7 @@
                     </div>
                     <div class="event-misc">
                         <h3 class="event-title text-center">{{event.title}}</h3>
-                        <p><strong>Time:</strong> {{event.time}}</p>
-                        <p><strong>Description:</strong> {{event.desc}}</p>
+                        <p class="text-center"><strong>Date:</strong> {{event.day}}, {{event.month}} {{event.date}}</p>
                     </div>
                 </div>
             </div>

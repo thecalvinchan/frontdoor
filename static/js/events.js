@@ -5,35 +5,24 @@ var dates = {
 
 angular.module('EventsModule', [], function($provide) {
     $provide.factory('events', ['$http', function(http) {
-        var events = [];
+        var events = {events:[]};
         getEvents(http,events);
         return events;
     }]);
 });
 
-function eventCtrl(scope,notifyService) {
-    $scope.events = notifyService();
+function eventCtrl(scope,events) {
+    scope.events = events;
 }
 
 eventCtrl.$inject = ['$scope','events'];
 
 function getEvents(http,container) {
-    http.get({method: 'GET', url: 'graph.facebook.com/me/?fields=id,events.fields(name,owner,cover,id,start_time)'}).success(parseEvents(container)).error(console.log(err));
+        http({method: 'GET', url: '/api/events'}).success(parseEvents(container)).error(function(err) {console.log(err)});
 }
     
 function parseEvents(container) {
     return function(data, status, headers, config) {
-        var events = data.events.data;
-        for (i in events) {
-            if (events[i].owner.id == data.id) {
-                var start_time = new Date(events[i].start_time);
-                $container.push({
-                    month: dates.months[start_time.getMonth()],
-                    date: start_time.getDate(),
-                    title: events[i].name,
-                    day: dates.days[start_time.getDay()]
-                });
-            }
-        }
+        container.events = data.events;
     }
 }
