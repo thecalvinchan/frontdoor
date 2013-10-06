@@ -1,5 +1,7 @@
 var express = require('express');
 var graph = require('fbgraph');
+var http = require('http');
+var querystring = require('querystring');
 
 var app = express();
 var conf = {
@@ -109,19 +111,41 @@ function scheduleEvents(req, res) {
         var attendees = fbres.attending.data;
         var attendees_pictures = {};
         for (var i = 0; i< attendees.length; i++) {
-            retrieveUserPictures(attendees[i].id,req,retrievePictures(attendees_pictures,attendees[i].id,res),{current:i,total:attendees.length}); 
+            retrieveUserPictures(event_id,attendees[i].id,req,retrievePictures(attendees_pictures,attendees[i].id,res),{current:i,total:attendees.length}); 
             console.log(attendees_pictures[attendees[i].id]);
         } 
     });
 }
 
 function retrievePictures(container,attendee_id,res) {
-    return function(pictures,iteration) {
+    return function(pictures,iteration,event_id) {
         container[attendee_id] = pictures;
         console.log("Iteration "+iteration.current);
         if (iteration.current == iteration.total-1) {
-            console.log(container);
-            res.send("laisjdfoij")
+            var post_data = querystring.stringify({
+                data: JSON.stringify(container),
+                id:event_id
+            });
+            var config = {
+                host: '54.200.89.7',
+                port: 80,
+                path: '/',
+                method: 'POST',
+                headers: {
+                    'Content-Type':'application/x-www-form-urlencoded',
+                    'Content-Length': Buffer.byteLength(post_data)
+                }
+            };
+            var post_req = http.request(config, function(res) {  
+                res.setEncoding('utf8');  
+                res.on('data', function (chunk) {  
+                  console.log('Response: ' + chunk);  
+                });  
+            });  
+            post_req.write(post_data);
+            post_req.end();
+            console.log(post_data);
+            res.send("Success")
         }
         //console.log(container[attendee_id]);
     }
@@ -129,9 +153,14 @@ function retrievePictures(container,attendee_id,res) {
 
 //API Helper Functions
 
-function retrieveUserPictures(user_id,req,callback,iteration) {
+function retrieveUserPictures(event_id,user_id,req,callback,iteration) {
     graph.get(user_id+'?fields=albums.fields(name)&access_token='+req.session.access_token, function(err, fbres) {
-        var albums = fbres.albums.data;
+        if(err) {
+            console.log(err);
+        }
+        if (fbres.albums.data) {
+            var albums = fbres.albums.data;
+        }
         var prof_pic_album_id;
         for (var i in albums) {
             console.log(albums[i].name);
@@ -142,9 +171,11 @@ function retrieveUserPictures(user_id,req,callback,iteration) {
         }
         console.log(prof_pic_album_id);
         graph.get(prof_pic_album_id+'?fields=photos.limit(100).fields(id,link)&access_token='+req.session.access_token, function(error, fbresponse) {
-            var photos = fbresponse.photos.data;
+            if (fbresponse.photos) {
+                var photos = fbresponse.photos.data;
+            } 
             var pictures = [];
-            for (var i=0; i<photos.length || i<20; i++) {
+            for (var i=0; i<photos.length; i++) {
                 console.log(photos.length-i);
                 pictures.push({
                     id : photos[i].id,
@@ -153,7 +184,7 @@ function retrieveUserPictures(user_id,req,callback,iteration) {
                 console.log(photos[i].id);
             }
             console.log('ASDFLKJKL'); 
-            callback(pictures,iteration)
+            callback(pictures,iteration,event_id)
         });
     });
 }
