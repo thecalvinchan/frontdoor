@@ -9,6 +9,15 @@
     position: relative;
 }
 
+.scheduled .event-details{
+    border-color: #f0ad4e;
+    color: #f0ad4e;
+}
+
+.scheduled .event-details:hover {
+    border-color: #ed9c28;
+}
+
 .event-time, .event-misc {
     position: absolute;
     width: 100%;
@@ -23,6 +32,14 @@
     border-bottom: 25px solid #ddd;
 }
 
+.scheduled .event-month {
+    border-bottom: 25px solid #f0ad4e;
+}
+
+.scheduled .event-details:hover .event-month {
+    border-bottom: 25px solid #ed9c28;
+}
+
 .event-date {
     font-size: 900%;
     font-weight: bold;
@@ -32,6 +49,10 @@
     background-color: #ddd;
     color: #fff;
     display: none;
+}
+
+.scheduled .event-misc {
+    background-color: #f0ad4e;
 }
 
 .event-misc p {

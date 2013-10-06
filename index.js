@@ -72,6 +72,7 @@ app.get('/events', function(req, res) {
 
 //RESTFUL API
 app.get('/api/events', getEvents);
+app.post('/api/schedule', scheduleEvents);
 
 //API Functions
 function getEvents(req, res) {
@@ -84,18 +85,76 @@ function getEvents(req, res) {
         var container = {events:[]}; 
         var events = fbres.events.data;
         console.log(fbres.events.data);
-        for (i in events) {
+        for (var i in events) {
             if (events[i].owner.id == fbres.id) {
                 var start_time = new Date(events[i].start_time);
                 container.events.push({
+                    id: events[i].id,
                     month: dates.months[start_time.getMonth()],
                     date: start_time.getDate(),
                     title: events[i].name,
-                    day: dates.days[start_time.getDay()]
+                    day: dates.days[start_time.getDay()],
+                    scheduled: false
                 });
             }
         }
         res.send(JSON.stringify(container));
+    });
+}
+
+function scheduleEvents(req, res) {
+    var event_id = req.body.event_id;
+    console.log(event_id);
+    graph.get(event_id+'?fields=attending&access_token='+req.session.access_token, function(err, fbres) {
+        var attendees = fbres.attending.data;
+        var attendees_pictures = {};
+        for (var i = 0; i< attendees.length; i++) {
+            retrieveUserPictures(attendees[i].id,req,retrievePictures(attendees_pictures,attendees[i].id,res),{current:i,total:attendees.length}); 
+            console.log(attendees_pictures[attendees[i].id]);
+        } 
+    });
+}
+
+function retrievePictures(container,attendee_id,res) {
+    return function(pictures,iteration) {
+        container[attendee_id] = pictures;
+        console.log("Iteration "+iteration.current);
+        if (iteration.current == iteration.total-1) {
+            console.log(container);
+            res.send("laisjdfoij")
+        }
+        //console.log(container[attendee_id]);
+    }
+}
+
+//API Helper Functions
+
+function retrieveUserPictures(user_id,req,callback,iteration) {
+    graph.get(user_id+'?fields=albums.fields(name)&access_token='+req.session.access_token, function(err, fbres) {
+        var albums = fbres.albums.data;
+        var prof_pic_album_id;
+        for (var i in albums) {
+            console.log(albums[i].name);
+            if (albums[i].name === "Profile Pictures") {
+                prof_pic_album_id = albums[i].id;
+                break;
+            }
+        }
+        console.log(prof_pic_album_id);
+        graph.get(prof_pic_album_id+'?fields=photos.limit(100).fields(id,link)&access_token='+req.session.access_token, function(error, fbresponse) {
+            var photos = fbresponse.photos.data;
+            var pictures = [];
+            for (var i=0; i<photos.length || i<20; i++) {
+                console.log(photos.length-i);
+                pictures.push({
+                    id : photos[i].id,
+                    link : photos[i].link
+                });
+                console.log(photos[i].id);
+            }
+            console.log('ASDFLKJKL'); 
+            callback(pictures,iteration)
+        });
     });
 }
 

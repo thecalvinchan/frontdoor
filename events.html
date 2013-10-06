@@ -24,8 +24,8 @@
             </div>
         </header>
         <section class="row" ng-controller="eventCtrl">
-            <div class="col-md-4 event" ng-repeat="event in events.events">
-                <div class="event-details">
+            <div class="col-md-4 event" ng-repeat="event in events.events" id="event{{event.id}}">
+                <div class="event-details" data-toggle="modal" href="#{{event.id}}">
                     <div class="event-time">
                         <h3 class="event-month text-center">{{event.month}}</h3>
                         <h3 class="event-date text-center">{{event.date}}</h3>
@@ -35,6 +35,23 @@
                         <p class="text-center"><strong>Date:</strong> {{event.day}}, {{event.month}} {{event.date}}</p>
                     </div>
                 </div>
+                <div class="modal fade" id="{{event.id}}">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                <h4 class="modal-title">{{event.title}}</h4>
+                            </div>
+                            <div class="modal-body">
+                                <p>Are you sure you want to schedule {{event.title}} with FrontDoor?</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                                <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="scheduleEvent({{event.id}})">Confirm</button>
+                            </div>
+                        </div><!-- /.modal-content -->
+                    </div><!-- /.modal-dialog -->
+                </div><!-- /.modal -->
             </div>
         </section>
         <div class="row">
