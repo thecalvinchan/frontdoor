@@ -74,7 +74,7 @@ app.get('/events', function(req, res) {
 
 //RESTFUL API
 app.get('/api/events', getEvents);
-app.post('/api/schedule', scheduleEvents);
+app.post('/api/schedule', scheduleEvent);
 
 //API Functions
 function getEvents(req, res) {
@@ -104,90 +104,51 @@ function getEvents(req, res) {
     });
 }
 
-function scheduleEvents(req, res) {
+function scheduleEvent(req, res) {
     var event_id = req.body.event_id;
     console.log(event_id);
     graph.get(event_id+'?fields=attending&access_token='+req.session.access_token, function(err, fbres) {
         var attendees = fbres.attending.data;
-        var attendees_pictures = {};
-        for (var i = 0; i< attendees.length; i++) {
-            retrieveUserPictures(event_id,attendees[i].id,req,retrievePictures(attendees_pictures,attendees[i].id,res),{current:i,total:attendees.length}); 
-            console.log(attendees_pictures[attendees[i].id]);
-        } 
-    });
-}
-
-function retrievePictures(container,attendee_id,res) {
-    return function(pictures,iteration,event_id) {
-        container[attendee_id] = pictures;
-        console.log("Iteration "+iteration.current);
-        if (iteration.current == iteration.total-1) {
-            var post_data = querystring.stringify({
-                data: JSON.stringify(container),
-                id:event_id
-            });
-            var config = {
-                host: '54.200.89.7',
-                port: 80,
-                path: '/',
-                method: 'POST',
-                headers: {
-                    'Content-Type':'application/x-www-form-urlencoded',
-                    'Content-Length': Buffer.byteLength(post_data)
+        console.log(attendees);
+        var data = {};
+        var processed = 0;
+        for (var x in attendees) {
+            data[attendees[x].id] = {
+                id: attendees[x].id,
+                name: attendees[x].name
+            }
+            retrieveUserPictures(data[attendees[x].id], req, function(pictures) {
+                console.log(data);
+                processed++;
+                if (processed == attendees.length) {
+                    console.log(processed);
                 }
-            };
-            var post_req = http.request(config, function(res) {  
-                res.setEncoding('utf8');  
-                res.on('data', function (chunk) {  
-                  console.log('Response: ' + chunk);  
-                });  
-            });  
-            post_req.write(post_data);
-            post_req.end();
-            console.log(post_data);
-            res.send("Success")
+            });
         }
-        //console.log(container[attendee_id]);
-    }
+    });
 }
 
 //API Helper Functions
 
-function retrieveUserPictures(event_id,user_id,req,callback,iteration) {
+function retrieveUserPictures(user,req,callback) {
+    var user_id = user.id;
+    user.pictures = [];
     graph.get(user_id+'?fields=albums.fields(name)&access_token='+req.session.access_token, function(err, fbres) {
-        if(err) {
-            console.log(err);
-        }
-        if (fbres.albums.data) {
-            var albums = fbres.albums.data;
-        }
-        var prof_pic_album_id;
-        for (var i in albums) {
-            console.log(albums[i].name);
-            if (albums[i].name === "Profile Pictures") {
-                prof_pic_album_id = albums[i].id;
+        for (var x in fbres.albums.data) {
+            if (fbres.albums.data[x].name == "Profile Pictures") {
+                var album_id = fbres.albums.data[x].id;
+                graph.get(album_id+'?fields=photos.fields(picture,source)&access_token='+req.session.access_token, function(err2, fbres2) {
+                    for (var y in fbres2.photos.data) {
+                        user.pictures.push(fbres2.photos.data[y].picture);
+                    }
+                    callback();
+                });   
                 break;
             }
         }
-        console.log(prof_pic_album_id);
-        graph.get(prof_pic_album_id+'?fields=photos.limit(100).fields(id,link)&access_token='+req.session.access_token, function(error, fbresponse) {
-            if (fbresponse.photos) {
-                var photos = fbresponse.photos.data;
-            } 
-            var pictures = [];
-            for (var i=0; i<photos.length; i++) {
-                console.log(photos.length-i);
-                pictures.push({
-                    id : photos[i].id,
-                    link : photos[i].link
-                });
-                console.log(photos[i].id);
-            }
-            console.log('ASDFLKJKL'); 
-            callback(pictures,iteration,event_id)
-        });
     });
 }
+
 
 app.listen(1337);
 console.log('Listening on port 1337');

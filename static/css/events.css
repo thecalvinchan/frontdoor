@@ -1,4 +1,5 @@
-.event {
+h1 {
+    font-family: "Helvetica Neue Condensed Bold";
 }
 
 .event-details {
@@ -10,12 +11,12 @@
 }
 
 .scheduled .event-details{
-    border-color: #f0ad4e;
-    color: #f0ad4e;
+    border-color: #428bca;
+    color: #428bca;
 }
 
 .scheduled .event-details:hover {
-    border-color: #ed9c28;
+    border-color: #3276b1;
 }
 
 .event-time, .event-misc {
@@ -33,7 +34,7 @@
 }
 
 .scheduled .event-month {
-    border-bottom: 25px solid #f0ad4e;
+    border-bottom: 25px solid #428bca;
 }
 
 .scheduled .event-details:hover .event-month {
@@ -52,7 +53,7 @@
 }
 
 .scheduled .event-misc {
-    background-color: #f0ad4e;
+    background-color: #428bca
 }
 
 .event-misc p {
