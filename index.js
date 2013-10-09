@@ -121,7 +121,34 @@ function scheduleEvent(req, res) {
                 console.log(data);
                 processed++;
                 if (processed == attendees.length) {
-                    console.log(processed);
+                    //console.log(processed);
+                    var query = JSON.stringify(data);
+                    var headers = {
+                        'Content-Type': 'application/json',
+                        'Content-Length': query.length
+                    };
+                    var options = {
+                        host: '54.200.89.7',
+                        port: 80,
+                        path: '/',
+                        method: 'POST',
+                        headers: headers
+                    };
+                    var req = http.request(options, function(res) {
+                        res.setEncoding('utf-8');   
+                        var responseString = '';
+                        res.on('data', function(data) {
+                            responseString += data;
+                        });
+                        res.on('end',function() {
+                            console.log(responseString);
+                        });
+                    });
+                    req.on('error', function(err) {
+                        console.log(err);
+                    });
+                    req.write(query);
+                    req.end();
                 }
             });
         }
